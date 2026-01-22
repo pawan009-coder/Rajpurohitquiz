@@ -1,0 +1,211 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+/* BODY BACKGROUND */
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: #fff;
+}
+
+/* LOGIN SCREEN */
+#login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-box {
+  width: 90%;
+  max-width: 360px;
+  padding: 30px 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.login-box h1 {
+  font-size: 34px;
+  letter-spacing: 1px;
+}
+
+.login-box p {
+  margin-top: 8px;
+  opacity: 0.85;
+}
+
+.login-box button {
+  margin-top: 25px;
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  color: #000;
+  cursor: pointer;
+}
+
+/* APP HEADER */
+header {
+  text-align: center;
+  padding: 18px 12px;
+}
+
+header h2 {
+  font-size: 26px;
+}
+
+header p {
+  margin-top: 4px;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+/* TABS */
+.tab {
+  display: none;
+  padding-bottom: 90px;
+}
+
+.tab.active {
+  display: block;
+}
+
+/* CARD UI */
+.card {
+  margin: 15px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* HEADINGS */
+h3 {
+  text-align: center;
+  margin-top: 10px;
+}
+
+h4 {
+  margin-bottom: 10px;
+}
+
+/* PARAGRAPH */
+p {
+  line-height: 1.6;
+}
+
+/* BUTTONS */
+button {
+  cursor: pointer;
+}
+
+#logoutBtn,
+.quizClassBtn,
+#addSubjectBtn,
+#addQuizBtn,
+#addQuestionBtn,
+#updatePointsBtn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 30px;
+  border: none;
+  font-size: 15px;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: #fff;
+}
+
+/* RANK LIST */
+#rankList {
+  list-style: none;
+  padding: 10px 15px;
+}
+
+#rankList li {
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* PROFILE */
+#tab-me .card p {
+  margin-bottom: 8px;
+}
+
+/* INPUTS (ADMIN) */
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+}
+
+/* ADMIN PANEL */
+#admin-panel {
+  padding-bottom: 100px;
+}
+
+#admin-panel h3 {
+  text-align: center;
+  margin-top: 15px;
+}
+
+/* BOTTOM NAV BAR */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 65px;
+  display: flex;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(16px);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+}
+
+.bottom-nav div {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.bottom-nav div:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* QUIZ QUESTIONS BOX */
+#questionBox {
+  margin: 15px;
+}
+
+.quiz-option {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 25px;
+  border: none;
+  font-size: 15px;
+  background: linear-gradient(135deg, #ff7e5f, #feb47b);
+  color: #000;
+  cursor: pointer;
+}
