@@ -1,214 +1,295 @@
-/* Reset some default styles */
+/* =========================================
+   1. FONTS & VARIABLES
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600;800&display=swap');
+
+:root {
+    --bg-dark: #050505;
+    --bg-panel: #101015;
+    --primary-neon: #00f3ff;  /* Cyan */
+    --secondary-neon: #bc13fe; /* Purple/Pink */
+    --gold: #FFD700;
+    --text-white: #ffffff;
+    --text-gray: #a0a0a0;
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --danger: #ff2a2a;
+    --success: #00ff88;
+}
+
+/* =========================================
+   2. GLOBAL RESET & BODY (Supreme Background)
+   ========================================= */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent; /* Mobile tap color remove */
 }
 
-/* Body styling */
 body {
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #1e3c72, #2a5298); /* Gradient background */
-    color: white;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    overflow-x: hidden;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-dark);
+    /* Deep 3D Space Background */
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(188, 19, 254, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(0, 243, 255, 0.15) 0%, transparent 40%);
+    color: var(--text-white);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden; /* App feel, no scroll on body */
 }
 
-/* Header styling */
-header {
-    width: 100%;
+/* Custom Scrollbar for Content */
+::-webkit-scrollbar {
+    width: 4px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--secondary-neon);
+    border-radius: 10px;
+}
+
+/* Font Classes */
+.font-brand {
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+}
+
+/* =========================================
+   3. UTILITIES (Glassmorphism & Gradients)
+   ========================================= */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-panel:active {
+    transform: scale(0.98);
+}
+
+.text-gradient {
+    background: linear-gradient(90deg, var(--primary-neon), var(--secondary-neon));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 20px rgba(188, 19, 254, 0.3);
+}
+
+.shadow-neon {
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+}
+
+/* =========================================
+   4. SPLASH SCREEN (Animation)
+   ========================================= */
+#splash-screen {
+    background: #000;
+    z-index: 9999;
+}
+
+.splash-title {
+    font-size: 3.5rem;
+    line-height: 1.1;
+    text-transform: uppercase;
     text-align: center;
-    padding: 20px 0;
-    position: relative;
+    background: linear-gradient(45deg, #fff, var(--primary-neon), var(--secondary-neon), #fff);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s infinite linear;
 }
 
-.title {
-    font-size: 3em;
-    font-weight: bold;
-    text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+.splash-subtitle {
+    letter-spacing: 4px;
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    margin-top: 15px;
+    opacity: 0;
+    animation: fadeInUp 1s ease forwards 0.5s;
 }
 
-.stylish-text {
-    font-family: 'Cursive', sans-serif;
-    font-size: 4em;
-    color: #ffcc00; /* Gold color for stylish text */
-    text-shadow: 3px 3px 8px rgba(0,0,0,0.7);
+/* =========================================
+   5. AUTH SCREEN
+   ========================================= */
+#auth-screen {
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+}
+
+/* =========================================
+   6. HEADER & NAVIGATION
+   ========================================= */
+header {
+    background: rgba(20, 20, 25, 0.7);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Floating Bottom Nav */
+nav {
+    border-top: 1px solid rgba(255,255,255,0.05);
+    background: rgba(10, 10, 15, 0.9) !important;
+}
+
+.nav-btn {
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.nav-btn.active {
+    opacity: 1;
+    color: var(--primary-neon);
+    text-shadow: 0 0 10px var(--primary-neon);
+}
+
+/* Center 3D Button */
+.nav-center-btn {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(188, 19, 254, 0.5), inset 0 2px 5px rgba(255,255,255,0.5);
+    transform: translateY(-25px);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.nav-center-btn:active {
+    transform: translateY(-20px) scale(0.95);
+}
+
+/* =========================================
+   7. SECTIONS (Home, Rank, Quiz)
+   ========================================= */
+
+/* Admin Badge */
+#admin-badge {
+    background: var(--danger);
+    box-shadow: 0 0 10px var(--danger);
     animation: pulse 2s infinite;
 }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-
-.subtitle {
-    display: block;
-    font-size: 1.2em;
-    margin-top: 10px;
-    color: #fff;
-    font-family: 'Arial', sans-serif;
-}
-
-/* Navigation styles */
-.menu {
-    width: 100%;
+/* Rank Items */
+.rank-item {
     display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
+    border-left: 3px solid transparent;
 }
 
-.menu button {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 1.1em;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
+.rank-1 { border-left-color: var(--gold); background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent); }
+.rank-2 { border-left-color: #C0C0C0; } /* Silver */
+.rank-3 { border-left-color: #CD7F32; } /* Bronze */
+
+.crown-icon {
+    filter: drop-shadow(0 0 8px var(--gold));
+    animation: float 3s ease-in-out infinite;
 }
 
-.menu button:hover {
-    background: rgba(255, 255, 255, 0.4);
-    transform: scale(1.05);
-}
-
-/* Main content styles */
-main {
+/* Quiz Options */
+.quiz-option {
     width: 100%;
-    max-width: 1200px;
-    margin-top: 30px;
-    padding: 20px;
-    background: rgba(0,0,0,0.6);
-    border-radius: 20px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-    backdrop-filter: blur(10px);
+    padding: 15px;
+    text-align: left;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    transition: all 0.2s;
+    font-weight: 500;
 }
 
-/* Sections styling */
-.page {
-    display: none;
-    animation: fadeIn 1s forwards;
+.quiz-option:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--primary-neon);
 }
 
-.page.active {
-    display: block;
+.quiz-option.selected {
+    background: var(--primary-neon);
+    color: #000;
+    box-shadow: 0 0 15px var(--primary-neon);
+    border: none;
+}
+
+.quiz-option.correct {
+    background: var(--success) !important;
+    color: #000 !important;
+}
+
+.quiz-option.wrong {
+    background: var(--danger) !important;
+    color: #fff !important;
+}
+
+/* Profile Image Glow */
+.profile-glow {
+    position: relative;
+}
+.profile-glow::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
+    z-index: -1;
+    filter: blur(10px);
+    opacity: 0.7;
+}
+
+/* =========================================
+   8. ANIMATIONS (Keyframes)
+   ========================================= */
+
+@keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px) rotate(-12deg); }
+    50% { transform: translateY(-5px) rotate(-12deg); }
+    100% { transform: translateY(0px) rotate(-12deg); }
+}
+
+/* Fade In for Sections */
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
 }
 
-/* Header styles inside main (if any) */
-h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 2em;
-    color: #ffd700; /* Gold color for headers */
-    text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
-}
-
-/* Stats and rankings styles */
-.stats, .top-rankings {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 20px;
-    flex-wrap: wrap;
-}
-
-.stats div, .top-rankings div {
-    background: rgba(255,255,255,0.1);
-    padding: 15px;
-    border-radius: 10px;
-    width: 200px;
-    text-align: center;
-    font-size: 1.2em;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    transition: transform 0.2s, background 0.3s;
-}
-
-.stats div:hover, .top-rankings div:hover {
-    background: rgba(255,255,255,0.3);
-    transform: scale(1.05);
-}
-
-/* Crown style for top rank */
-.crown {
-    font-size: 2em;
-    color: gold;
-    margin-left: 10px;
-}
-
-/* Button styles inside quiz section */
-button {
-    background: linear-gradient(135deg, #ff7e5f, #feb47b);
-    color: #fff;
-    border: none;
-    padding: 14px 25px;
-    margin: 10px 0;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1.2em;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    transition: transform 0.2s, box-shadow 0.3s;
-}
-
-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-}
-
-/* User profile form styles */
-#userForm {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 400px;
-    margin: 20px auto;
-    background: rgba(255,255,255,0.1);
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-#userForm input[type="text"],
-#userForm input[type="email"],
-#userForm input[type="file"] {
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    font-size: 1em;
-}
-
-#userForm button {
-    padding: 12px;
-    font-size: 1.2em;
-    background: #ffd700;
-    color: #000;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-#userForm button:hover {
-    background: #e6c200;
-}
-
-/* Responsive adjustments */
-@media(max-width: 768px){
-    .stats, .top-rankings {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .stats div, .top-rankings div {
-        width: 80%;
-    }
-  }
+/* Admin Toggle Hidden Input */
+.hidden {
+    display: none !important;
+        }
