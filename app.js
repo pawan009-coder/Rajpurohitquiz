@@ -82,6 +82,11 @@ window.switchTab = (viewId) => {
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.add('text-gray-500'));
     if(viewId === 'home-view') loadLeaderboard();
 };
+// Open Admin Dashboard
+document.getElementById("admin-panel-entry").onclick = () => {
+    switchTab("admin-dashboard");
+};
+
 
 // ==========================================
 // 4. QUIZ ENGINE (POINTS & LOGIC)
@@ -240,3 +245,47 @@ const loadAppData = async (uid) => {
         }
     });
 };
+// ================================
+// ADMIN FULL CONTROLS
+// ================================
+
+window.addQuestionAdmin = async () => {
+    if (!isAdmin) return alert("Not admin");
+
+    const cls = document.getElementById("admin-class").value;
+    const question = document.getElementById("admin-question").value;
+
+    const options = [
+        opt1.value,
+        opt2.value,
+        opt3.value,
+        opt4.value
+    ];
+
+    const correct = Number(document.getElementById("correct-opt").value);
+
+    await addDoc(collection(db, `quizzes/class${cls}/questions`), {
+        text: question,
+        options,
+        correct,
+        time: 30
+    });
+
+    alert("Question Added Successfully");
+};
+
+window.resetLeaderboardAdmin = async () => {
+    if (!isAdmin) return;
+
+    const snap = await getDocs(collection(db, "users"));
+    snap.forEach(async (docu) => {
+        await updateDoc(doc(db, "users", docu.id), {
+            score: 0,
+            attended: 0,
+            unattended: 0
+        });
+    });
+
+    alert("Leaderboard Reset Done");
+};
+        
