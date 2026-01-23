@@ -1,118 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
-<meta charset="UTF-8">
-<title>RAJPUROHIT Quiz</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>RAJPUROHIT - Quiz App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- आप अपने CSS लिंक यहाँ जोड़ेंगे -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- मुख्य शीर्षक -->
+    <header>
+        <h1 class="title">
+            <span class="stylish-text">RAJPUROHIT</span> <br>
+            <span class="subtitle">BY PAWAN AND BHARAT</span>
+        </h1>
+        <!-- admin mode toggle button (hidden by default) -->
+        <button id="adminBtn" style="display:none;">Admin Mode</button>
+    </header>
 
-<!-- LOGIN -->
-<div id="login-screen">
-  <div class="login-box">
-    <h1>RAJPUROHIT</h1>
-    <p>BY PAWAN & BHARAT</p>
-    <button id="googleLoginBtn">Login with Google</button>
-  </div>
-</div>
+    <!-- नेविगेशन menu -->
+    <nav class="menu">
+        <button onclick="showPage('home')">होम</button>
+        <button onclick="showPage('globalRank')">ग्लोबल रैंक</button>
+        <button onclick="showPage('quiz')">क्विज़</button>
+        <button onclick="showPage('userData')">यूज़र डेटा</button>
+    </nav>
 
-<!-- MAIN APP -->
-<div id="app" style="display:none">
+    <!-- मुख्य कंटेंट सेक्शन -->
+    <main>
+        <!-- होम पेज -->
+        <section id="home" class="page">
+            <h2>होम</h2>
+            <div class="stats">
+                <div>ग्लोबल रैंक</div>
+                <div>आपका स्कोर</div>
+                <div>अटेंड किए गए क्विज़</div>
+                <div>अनएटेंड क्विज़</div>
+            </div>
+            <div class="top-rankings">
+                <h3>शीर्ष रैंकिंग</h3>
+                <div>पहला: <span class="crown">👑</span></div>
+                <div>दूसरा</div>
+                <div>तीसरा</div>
+            </div>
+        </section>
 
-<header>
-<h2>RAJPUROHIT</h2>
-<p>Welcome, <span id="userName">User</span></p>
-</header>
+        <!-- ग्लोबल रैंक पेज -->
+        <section id="globalRank" class="page" style="display:none;">
+            <h2>ग्लोबल रैंक</h2>
+            <!-- रैंकिंग लिस्ट यहाँ दिखेगी -->
+        </section>
 
-<!-- HOME -->
-<section id="tab-home" class="tab active">
-<h3>Dashboard</h3>
-<div class="card">🌍 Global Rank: <span id="globalRank">--</span></div>
-<div class="card">🎯 Your Score: <span id="yourScore">--</span></div>
-<div class="card">📝 Attended Quiz: <span id="attendedQuiz">--</span></div>
-<div class="card">⏳ Unattended Quiz: <span id="unattendedQuiz">--</span></div>
-</section>
+        <!-- क्विज़ पेज -->
+        <section id="quiz" class="page" style="display:none;">
+            <h2>क्विज़</h2>
+            <div>
+                <button onclick="selectQuizType(12)">12 का क्विज़</button>
+                <button onclick="selectQuizType(10)">10 का क्विज़</button>
+            </div>
+            <!-- क्विज़ कंटेंट यहाँ आएगा -->
+        </section>
 
-<!-- RANK -->
-<section id="tab-rank" class="tab">
-<h3>🏆 Global Ranking</h3>
-<ul id="rankList"></ul>
-</section>
+        <!-- यूज़र डेटा पेज -->
+        <section id="userData" class="page" style="display:none;">
+            <h2>अपना प्रोफ़ाइल</h2>
+            <form id="userForm">
+                <label>अपनी तस्वीर अपलोड करें:</label>
+                <input type="file" id="profilePic" accept="image/*"><br>
+                <label>नाम:</label>
+                <input type="text" id="name"><br>
+                <label>Gmail:</label>
+                <input type="email" id="email" value="nagtakanwarpkd@gmail.com" readonly><br>
+                <button type="submit">अपडेट करें</button>
+            </form>
+            <div id="userStats">
+                <!-- यूज़र का स्कोर दिखेगा -->
+            </div>
+        </section>
+    </main>
 
-<!-- QUIZ -->
-<section id="tab-quiz" class="tab">
-<h3>Select Class</h3>
-<div class="card">
-<button class="quizClassBtn" data-class="10">Class 10</button>
-<button class="quizClassBtn" data-class="12">Class 12</button>
-</div>
-<div id="subjectList"></div>
-<div id="quizList"></div>
-<div id="questionBox"></div>
-</section>
-
-<!-- PROFILE -->
-<section id="tab-me" class="tab">
-<h3>My Profile</h3>
-<div class="card">
-<p>Name: <span id="profileName">---</span></p>
-<p>Email: <span id="profileEmail">---</span></p>
-<p>Total Score: <span id="profileScore">---</span></p>
-</div>
-<button id="logoutBtn">Logout</button>
-</section>
-
-<!-- ADMIN -->
-<section id="admin-panel" style="display:none;">
-<h3>🔐 Admin Panel</h3>
-<div class="card">
-<h4>Add / Edit Subject</h4>
-<input type="text" id="adminClass" placeholder="Class (10 / 12)">
-<input type="text" id="adminSubject" placeholder="Subject Name">
-<button id="addSubjectBtn">Add Subject</button>
-</div>
-
-<div class="card">
-<h4>Add Quiz</h4>
-<input type="text" id="adminQuizTitle" placeholder="Quiz Title">
-<input type="text" id="adminQuizClass" placeholder="Class (10 / 12)">
-<input type="text" id="adminQuizSubject" placeholder="Subject Name">
-<button id="addQuizBtn">Add Quiz</button>
-</div>
-
-<div class="card">
-<h4>Add Question</h4>
-<input type="text" id="qQuizClass" placeholder="Class (10 / 12)">
-<input type="text" id="qQuizSubject" placeholder="Subject">
-<input type="text" id="qQuizId" placeholder="Quiz ID">
-<input type="text" id="questionText" placeholder="Question">
-<input type="text" id="optionA" placeholder="Option A">
-<input type="text" id="optionB" placeholder="Option B">
-<input type="text" id="optionC" placeholder="Option C">
-<input type="text" id="optionD" placeholder="Option D">
-<input type="text" id="correctOption" placeholder="Correct Option (A/B/C/D)">
-<input type="number" id="questionTimer" placeholder="Timer (seconds)">
-<button id="addQuestionBtn">Add Question</button>
-</div>
-
-<div class="card">
-<h4>Update User Points</h4>
-<input type="text" id="updateUserId" placeholder="User UID">
-<input type="number" id="updatePoints" placeholder="Points">
-<button id="updatePointsBtn">Update Points</button>
-</div>
-
-</section>
-
-<!-- Bottom Nav -->
-<nav class="bottom-nav">
-<div data-tab="home">🏠<br>Home</div>
-<div data-tab="rank">🏆<br>Rank</div>
-<div data-tab="quiz">📝<br>Quiz</div>
-<div data-tab="me">👤<br>Me</div>
-</nav>
-
-<script type="module" src="app.js"></script>
+    <!-- बुनियादी CSS और JS फ़ाइलें -->
+    <script src="script.js"></script>
 </body>
-</html>
+          </html>
