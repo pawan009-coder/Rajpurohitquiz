@@ -1,295 +1,55 @@
-/* =========================================
-   1. FONTS & VARIABLES
-   ========================================= */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600;800&display=swap');
-
-:root {
-    --bg-dark: #050505;
-    --bg-panel: #101015;
-    --primary-neon: #00f3ff;  /* Cyan */
-    --secondary-neon: #bc13fe; /* Purple/Pink */
-    --gold: #FFD700;
-    --text-white: #ffffff;
-    --text-gray: #a0a0a0;
-    --glass-bg: rgba(255, 255, 255, 0.03);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --danger: #ff2a2a;
-    --success: #00ff88;
-}
-
-/* =========================================
-   2. GLOBAL RESET & BODY (Supreme Background)
-   ========================================= */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent; /* Mobile tap color remove */
-}
-
+/* RAJPUROHIT SUPREME STYLE */
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--bg-dark);
-    /* Deep 3D Space Background */
-    background-image: 
-        radial-gradient(circle at 10% 20%, rgba(188, 19, 254, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(0, 243, 255, 0.15) 0%, transparent 40%);
-    color: var(--text-white);
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden; /* App feel, no scroll on body */
+    background: #000;
+    -webkit-tap-highlight-color: transparent;
 }
 
-/* Custom Scrollbar for Content */
-::-webkit-scrollbar {
-    width: 4px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background: var(--secondary-neon);
-    border-radius: 10px;
-}
-
-/* Font Classes */
-.font-brand {
-    font-family: 'Orbitron', sans-serif;
-    letter-spacing: 1px;
-}
-
-/* =========================================
-   3. UTILITIES (Glassmorphism & Gradients)
-   ========================================= */
 .glass-panel {
-    background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.glass-panel:active {
-    transform: scale(0.98);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
 }
 
 .text-gradient {
-    background: linear-gradient(90deg, var(--primary-neon), var(--secondary-neon));
+    background: linear-gradient(90deg, #00f3ff, #bc13fe);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 0 20px rgba(188, 19, 254, 0.3);
 }
 
-.shadow-neon {
-    box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+/* Splash Screen fix */
+#splash-screen h1 {
+    text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
 }
 
-/* =========================================
-   4. SPLASH SCREEN (Animation)
-   ========================================= */
-#splash-screen {
-    background: #000;
-    z-index: 9999;
+/* Animations */
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.splash-title {
-    font-size: 3.5rem;
-    line-height: 1.1;
-    text-transform: uppercase;
-    text-align: center;
-    background: linear-gradient(45deg, #fff, var(--primary-neon), var(--secondary-neon), #fff);
-    background-size: 300% 300%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shimmer 3s infinite linear;
+.animate-fade-in {
+    animation: fade-in 0.5s ease forwards;
 }
 
-.splash-subtitle {
-    letter-spacing: 4px;
-    font-size: 0.8rem;
-    color: var(--text-gray);
-    margin-top: 15px;
-    opacity: 0;
-    animation: fadeInUp 1s ease forwards 0.5s;
-}
-
-/* =========================================
-   5. AUTH SCREEN
-   ========================================= */
-#auth-screen {
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(5px);
-}
-
-/* =========================================
-   6. HEADER & NAVIGATION
-   ========================================= */
-header {
-    background: rgba(20, 20, 25, 0.7);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-/* Floating Bottom Nav */
-nav {
-    border-top: 1px solid rgba(255,255,255,0.05);
-    background: rgba(10, 10, 15, 0.9) !important;
-}
-
-.nav-btn {
-    transition: all 0.3s ease;
-    opacity: 0.7;
-}
-
-.nav-btn.active {
-    opacity: 1;
-    color: var(--primary-neon);
-    text-shadow: 0 0 10px var(--primary-neon);
-}
-
-/* Center 3D Button */
-.nav-center-btn {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 0 20px rgba(188, 19, 254, 0.5), inset 0 2px 5px rgba(255,255,255,0.5);
-    transform: translateY(-25px);
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.nav-center-btn:active {
-    transform: translateY(-20px) scale(0.95);
-}
-
-/* =========================================
-   7. SECTIONS (Home, Rank, Quiz)
-   ========================================= */
-
-/* Admin Badge */
-#admin-badge {
-    background: var(--danger);
-    box-shadow: 0 0 10px var(--danger);
-    animation: pulse 2s infinite;
-}
-
-/* Rank Items */
-.rank-item {
-    display: flex;
-    align-items: center;
-    padding: 15px;
-    margin-bottom: 10px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
-    border-left: 3px solid transparent;
-}
-
-.rank-1 { border-left-color: var(--gold); background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent); }
-.rank-2 { border-left-color: #C0C0C0; } /* Silver */
-.rank-3 { border-left-color: #CD7F32; } /* Bronze */
-
-.crown-icon {
-    filter: drop-shadow(0 0 8px var(--gold));
-    animation: float 3s ease-in-out infinite;
-}
-
-/* Quiz Options */
+/* Quiz Option Styles */
 .quiz-option {
     width: 100%;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 15px;
     text-align: left;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    transition: all 0.2s;
-    font-weight: 500;
+    transition: 0.3s;
 }
 
-.quiz-option:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: var(--primary-neon);
-}
-
-.quiz-option.selected {
-    background: var(--primary-neon);
+.quiz-option:active {
+    background: var(--raj-neon);
     color: #000;
-    box-shadow: 0 0 15px var(--primary-neon);
-    border: none;
 }
 
-.quiz-option.correct {
-    background: var(--success) !important;
-    color: #000 !important;
-}
-
-.quiz-option.wrong {
-    background: var(--danger) !important;
-    color: #fff !important;
-}
-
-/* Profile Image Glow */
-.profile-glow {
-    position: relative;
-}
-.profile-glow::before {
-    content: '';
-    position: absolute;
-    inset: -5px;
-    border-radius: 50%;
-    background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
-    z-index: -1;
-    filter: blur(10px);
-    opacity: 0.7;
-}
-
-/* =========================================
-   8. ANIMATIONS (Keyframes)
-   ========================================= */
-
-@keyframes shimmer {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.05); opacity: 0.8; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes float {
-    0% { transform: translateY(0px) rotate(-12deg); }
-    50% { transform: translateY(-5px) rotate(-12deg); }
-    100% { transform: translateY(0px) rotate(-12deg); }
-}
-
-/* Fade In for Sections */
-.animate-fade-in {
-    animation: fadeIn 0.4s ease-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.98); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-/* Admin Toggle Hidden Input */
-.hidden {
-    display: none !important;
-        }
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #bc13fe; border-radius: 10px; }
