@@ -1,16 +1,18 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, orderBy, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, orderBy, getDocs, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 1. FIREBASE CONFIGURATION (Using your provided keys)
+// ==========================================
+// 1. FIREBASE INITIALIZATION
+// ==========================================
 const firebaseConfig = {
-  apiKey: "AIzaSyAOHPevaiVZWoDuxpp0L89a9kMAH6nV4IM",
-  authDomain: "rajpurohit-bf36c.firebaseapp.com",
-  projectId: "rajpurohit-bf36c",
-  storageBucket: "rajpurohit-bf36c.firebasestorage.app",
-  messagingSenderId: "765326201462",
-  appId: "1:765326201462:web:a06b47ff3ae131a87d4557",
-  measurementId: "G-H29TJ7PFC9"
+    apiKey: "AIzaSyAOHPevaiVZWoDuxpp0L89a9kMAH6nV4IM",
+    authDomain: "rajpurohit-bf36c.firebaseapp.com",
+    projectId: "rajpurohit-bf36c",
+    storageBucket: "rajpurohit-bf36c.firebasestorage.app",
+    messagingSenderId: "765326201462",
+    appId: "1:765326201462:web:a06b47ff3ae131a87d4557",
+    measurementId: "G-H29TJ7PFC9"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -18,44 +20,27 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// 2. APP STATE & CONSTANTS
+// Global Variables
 let currentUser = null;
-let currentQuizData = [];
-let currentQuestionIndex = 0;
-let userScore = 0;
-let correctAnswers = 0;
-let timerInterval;
+let isAdmin = false;
 const ADMIN_EMAIL = "nagtakanwarpkd@gmail.com";
+let currentQuestions = [];
+let questionIndex = 0;
+let tempScore = 0;
+let correctCount = 0;
+let quizTimer;
 
-// 3. AUTHENTICATION LOGIC
-const loginBtn = document.getElementById('google-login-btn');
-if(loginBtn) {
-    loginBtn.onclick = () => {
-        signInWithPopup(auth, provider).catch(err => console.error("Login Failed", err));
-    };
-}
-
-document.getElementById('btn-logout').onclick = () => signOut(auth);
-
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        currentUser = user;
-        await setupUser(user);
-        showScreen('app-container');
-        updateUI(user);
-        loadLeaderboard();
-    } else {
-        showScreen('auth-screen');
-    }
-});
-
-// 4. USER SETUP & DATA
-async function setupUser(user) {
+// ==========================================
+// 2. AUTHENTICATION & USER DATA
+// ==========================================
+const checkUser = async (user) => {
     const userRef = doc(db, "users", user.uid);
     const snap = await getDoc(userRef);
     
+    isAdmin = (user.email === ADMIN_EMAIL);
+
     if (!snap.exists()) {
-        const newUser = {
+        const userData = {
             uid: user.uid,
             name: user.displayName,
             email: user.email,
@@ -63,154 +48,190 @@ async function setupUser(user) {
             score: 0,
             attended: 0,
             unattended: 0,
-            isAdmin: user.email === ADMIN_EMAIL
+            rank: 0
         };
-        await setDoc(userRef, newUser);
+        await setDoc(userRef, userData);
     }
-}
-
-// 5. NAVIGATION & UI UPDATES
-function showScreen(id) {
-    document.getElementById('splash-screen').style.display = 'none';
-    document.getElementById('auth-screen').classList.add('hidden');
-    document.getElementById('app-container').classList.add('hidden');
-    document.getElementById(id).classList.remove('hidden');
-    if(id === 'app-container') document.getElementById(id).classList.add('flex');
-}
-
-function updateUI(user) {
-    document.getElementById('user-name-display').innerText = user.displayName;
-    document.getElementById('profile-name').innerText = user.displayName;
-    document.getElementById('profile-email').innerText = user.email;
-    document.getElementById('header-user-img').src = user.photoURL;
-    document.getElementById('profile-img-lg').src = user.photoURL;
-}
-
-// 6. QUIZ SYSTEM LOGIC
-// Admin decide karega Class (10/12) aur Subject
-window.startQuiz = async (category, subject) => {
-    const q = query(collection(db, `quizzes/${category}/${subject}`));
-    const snap = await getDocs(q);
-    currentQuizData = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
-    
-    if(currentQuizData.length === 0) return alert("No questions added yet!");
-    
-    document.getElementById('quiz-class-select').classList.add('hidden');
-    document.getElementById('quiz-interface').classList.remove('hidden');
-    currentQuestionIndex = 0;
-    correctAnswers = 0;
-    loadQuestion();
+    loadAppData(user.uid);
 };
 
-function loadQuestion() {
-    const q = currentQuizData[currentQuestionIndex];
-    document.getElementById('question-text').innerText = q.question;
-    document.getElementById('quiz-progress').innerText = `${currentQuestionIndex + 1}/${currentQuizData.length}`;
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        checkUser(user);
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+        document.getElementById('app-container').classList.add('flex');
+    } else {
+        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('app-container').classList.add('hidden');
+    }
+});
+
+// Login Trigger
+document.getElementById('login-btn').onclick = () => signInWithPopup(auth, provider);
+
+// ==========================================
+// 3. UI NAVIGATION LOGIC
+// ==========================================
+window.switchTab = (viewId) => {
+    document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+    document.getElementById(viewId).classList.remove('hidden');
     
-    const optionsBox = document.getElementById('options-container');
-    optionsBox.innerHTML = '';
+    // Update Nav UI
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.add('text-gray-500'));
+    if(viewId === 'home-view') loadLeaderboard();
+};
+
+// ==========================================
+// 4. QUIZ ENGINE (POINTS & LOGIC)
+// ==========================================
+window.startQuizFlow = async (grade) => {
+    // Grade (10 or 12) se questions fetch karna
+    const qSnap = await getDocs(collection(db, `quizzes/class${grade}/questions`));
+    currentQuestions = qSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    if(currentQuestions.length === 0) {
+        alert("Admin ne abhi questions nahi dale hain!");
+        return;
+    }
+
+    document.getElementById('class-select').classList.add('hidden');
+    document.getElementById('quiz-interface').classList.remove('hidden');
     
-    q.options.forEach((opt, idx) => {
+    questionIndex = 0;
+    tempScore = 0;
+    correctCount = 0;
+    showQuestion();
+};
+
+const showQuestion = () => {
+    const q = currentQuestions[questionIndex];
+    document.getElementById('question-text').innerText = q.text;
+    document.getElementById('quiz-progress').innerText = `${questionIndex + 1}/${currentQuestions.length}`;
+    
+    const optionsDiv = document.getElementById('options-container');
+    optionsDiv.innerHTML = '';
+
+    q.options.forEach((opt, i) => {
         const btn = document.createElement('button');
-        btn.className = 'quiz-option glass-panel p-4 text-left hover:bg-white/10';
+        btn.className = "quiz-option glass p-4 text-left hover:border-cyan-400 transition-all";
         btn.innerText = opt;
-        btn.onclick = () => checkAnswer(idx, q.correct);
-        optionsBox.appendChild(btn);
+        btn.onclick = () => handleAnswer(i, q.correct);
+        optionsDiv.appendChild(btn);
     });
 
-    startTimer(q.time || 30); // Admin decide karega timer
-}
+    startTimer(q.time || 30);
+};
 
-function checkAnswer(selected, correct) {
-    clearInterval(timerInterval);
+const handleAnswer = (selected, correct) => {
+    clearInterval(quizTimer);
     if(selected === correct) {
-        correctAnswers++;
-        userScore += 5; // Har sahi ke 5 points
+        tempScore += 5; // +5 for correct
+        correctCount++;
     } else {
-        userScore -= 1; // Galat hone pr 1 point cut
+        tempScore -= 1; // -1 for wrong
     }
-    
-    currentQuestionIndex++;
-    if(currentQuestionIndex < currentQuizData.length) {
-        loadQuestion();
+
+    questionIndex++;
+    if(questionIndex < currentQuestions.length) {
+        showQuestion();
     } else {
-        finishQuiz();
+        endQuiz();
     }
-}
+};
 
-async function finishQuiz() {
-    // Percent extra points calculation (from 500)
-    const accuracy = (correctAnswers / currentQuizData.length);
-    const bonus = Math.round(500 * accuracy);
-    const finalEarned = userScore + bonus;
+const endQuiz = async () => {
+    // Bonus Logic: Total 500 me se Accuracy % extra points
+    const accuracy = (correctCount / currentQuestions.length);
+    const bonusPoints = Math.round(500 * accuracy);
+    const totalEarned = tempScore + bonusPoints;
 
-    // Update Firebase
     const userRef = doc(db, "users", currentUser.uid);
-    const snap = await getDoc(userRef);
-    const newTotal = (snap.data().score || 0) + finalEarned;
-    
+    const userSnap = await getDoc(userRef);
+    const currentTotal = userSnap.data().score || 0;
+
     await updateDoc(userRef, {
-        score: newTotal,
-        attended: (snap.data().attended || 0) + 1
+        score: currentTotal + totalEarned,
+        attended: (userSnap.data().attended || 0) + 1
     });
 
-    alert(`Quiz Finished! Earned: ${finalEarned} Points (Bonus: ${bonus})`);
-    location.reload(); // Refresh to home
-}
+    alert(`Quiz Complete! Points: ${tempScore} + Bonus: ${bonusPoints} = ${totalEarned}`);
+    window.location.reload();
+};
 
-function startTimer(sec) {
-    let t = sec;
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        t--;
-        document.getElementById('quiz-timer').innerText = `Time: ${t}s`;
-        if(t <= 0) {
-            clearInterval(timerInterval);
-            checkAnswer(-1, -2); // Auto wrong if time up
+const startTimer = (sec) => {
+    let timeLeft = sec;
+    const timerUI = document.getElementById('quiz-timer');
+    clearInterval(quizTimer);
+    quizTimer = setInterval(() => {
+        timeLeft--;
+        timerUI.innerText = `Time: ${timeLeft}s`;
+        if(timeLeft <= 0) {
+            clearInterval(quizTimer);
+            handleAnswer(-1, 0); // Time up = Wrong
         }
     }, 1000);
-}
+};
 
-// 7. LEADERBOARD (Global Rank)
-async function loadLeaderboard() {
+// ==========================================
+// 5. ADMIN & DATA MANAGEMENT
+// ==========================================
+// Secret Admin Button (Top Logo click logic)
+let adminClicks = 0;
+document.getElementById('admin-trigger').onclick = () => {
+    if(!isAdmin) return;
+    adminClicks++;
+    if(adminClicks === 5) {
+        document.getElementById('admin-tag').classList.remove('hidden');
+        alert("Master Admin Mode Activated!");
+        // Enable Admin-only UI elements here
+    }
+};
+
+// Admin can manually update points
+window.updatePointsAdmin = async (uid, newScore) => {
+    if(!isAdmin) return;
+    await updateDoc(doc(db, "users", uid), { score: newScore });
+};
+
+// Load Leaderboard with Crown for Rank 1
+const loadLeaderboard = async () => {
     const q = query(collection(db, "users"), orderBy("score", "desc"));
     const snap = await getDocs(q);
-    const list = document.getElementById('leaderboard-list');
-    list.innerHTML = '';
-    
-    snap.docs.forEach((doc, idx) => {
-        const data = doc.data();
-        const isFirst = idx === 0;
-        list.innerHTML += `
-            <div class="glass-panel p-4 flex items-center gap-4 ${isFirst ? 'border-raj-gold bg-yellow-900/10' : ''}">
+    const board = document.getElementById('leaderboard');
+    board.innerHTML = '';
+
+    snap.docs.forEach((doc, index) => {
+        const d = doc.data();
+        const isFirst = index === 0;
+        board.innerHTML += `
+            <div class="glass p-4 flex items-center gap-4 ${isFirst ? 'border-yellow-500 bg-yellow-500/10' : ''}">
                 <div class="relative">
-                    ${isFirst ? '<i class="fas fa-crown text-raj-gold absolute -top-4 -left-2 rotate-[-20deg]"></i>' : ''}
-                    <img src="${data.photo}" class="w-10 h-10 rounded-full border-2 ${isFirst ? 'border-raj-gold' : 'border-gray-500'}">
+                    ${isFirst ? '<i class="fas fa-crown text-yellow-500 absolute -top-4 -left-2 scale-125"></i>' : ''}
+                    <img src="${d.photo}" class="w-10 h-10 rounded-full border-2 border-pink-500">
                 </div>
                 <div class="flex-1">
-                    <p class="font-bold">${data.name}</p>
-                    <p class="text-xs text-gray-400">${data.score} XP</p>
+                    <p class="font-bold">${d.name}</p>
+                    <p class="text-xs text-gray-400">${d.score} XP</p>
                 </div>
-                <div class="font-brand text-xl">#${idx + 1}</div>
+                <div class="font-brand text-xl">#${index + 1}</div>
             </div>
         `;
     });
-}
-
-// 8. ADMIN SECRET & PANEL
-let adminClicks = 0;
-document.getElementById('admin-secret-btn').onclick = () => {
-    if(currentUser.email !== ADMIN_EMAIL) return;
-    adminClicks++;
-    if(adminClicks === 5) {
-        document.getElementById('admin-badge').classList.remove('hidden');
-        alert("Admin Mode ON! You can now add classes and edit points.");
-        // Admin code to inject buttons for adding questions would go here
-    }
 };
 
-// Admin Function: Point Badhana
-window.adminUpdatePoints = async (targetUserId, newPoints) => {
-    if(currentUser.email !== ADMIN_EMAIL) return;
-    await updateDoc(doc(db, "users", targetUserId), { score: newPoints });
+// Profile & Data Updates
+const loadAppData = async (uid) => {
+    const userRef = doc(db, "users", uid);
+    onSnapshot(userRef, (doc) => {
+        const data = doc.data();
+        document.getElementById('score-display').innerText = `${data.score} XP`;
+        document.getElementById('score-val').innerText = data.score;
+        document.getElementById('user-name').innerText = data.name;
+        // User data for Profile section
+        if(document.getElementById('profile-score')) {
+            document.getElementById('profile-score').innerText = `${data.score} XP`;
+        }
+    });
 };
