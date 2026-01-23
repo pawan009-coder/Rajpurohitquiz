@@ -4,347 +4,161 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RAJPUROHIT - The Ultimate Quiz</title>
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        'brand': ['Orbitron', 'sans-serif'],
-                        'body': ['Poppins', 'sans-serif'],
+                        brand: ['Orbitron', 'sans-serif'],
+                        body: ['Poppins', 'sans-serif'],
                     },
                     colors: {
                         'raj-gold': '#FFD700',
                         'raj-neon': '#00f3ff',
                         'raj-pink': '#bc13fe',
-                        'glass': 'rgba(255, 255, 255, 0.1)',
-                    },
-                    boxShadow: {
-                        'neon': '0 0 10px #bc13fe, 0 0 20px #bc13fe',
-                        '3d': '0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3)',
                     }
                 }
             }
         }
     </script>
-<link rel="stylesheet" href="style.css">
-    
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .glass-panel {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+        }
+    </style>
 </head>
-<script type="module" src="app.js"></script>
-    <body class="font-body h-screen w-screen relative overflow-hidden">
 
-    <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black transition-opacity duration-1000">
-        <h1 class="font-brand text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-raj-neon via-purple-500 to-raj-pink tracking-widest animate-pulse drop-shadow-lg">
-            RAJPUROHIT
-        </h1>
-        <div class="mt-8 text-gray-400 text-sm tracking-[0.5em] uppercase font-bold">
-            By Pawan and Bharat
-        </div>
-        <div class="mt-10 w-24 h-1 bg-gray-800 rounded-full overflow-hidden">
-            <div class="h-full bg-raj-neon w-1/2 animate-bounce"></div>
-        </div>
+<body class="bg-black text-white overflow-hidden">
+
+<!-- ================= HEADER ================= -->
+<header class="flex justify-between items-center p-4 glass-panel m-2 rounded-xl sticky top-0 z-50">
+
+    <!-- LOGO (FIXED SIZE) -->
+    <div class="font-brand text-xl tracking-wider truncate max-w-[180px]">
+        RAJPUROHIT
     </div>
 
-    <div id="auth-screen" class="fixed inset-0 z-40 flex flex-col items-center justify-center hidden">
-        <div class="glass-panel p-8 w-11/12 max-w-md text-center shadow-neon transform transition hover:scale-105 duration-300">
-            <h2 class="font-brand text-3xl mb-2 text-white">Welcome</h2>
-            <p class="text-gray-400 mb-8 text-sm">Sign in to start your journey</p>
-            
-            <button id="google-login-btn" class="w-full bg-white text-black font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-200 transition-all shadow-3d">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6" alt="G">
-                Continue with Google
-            </button>
-        </div>
-    </div>
+    <!-- ADMIN BADGE + BUTTON -->
+    <div class="flex items-center gap-2">
+        <span id="admin-badge"
+              class="hidden bg-red-600 text-white text-xs px-2 py-1 rounded font-bold">
+            ADMIN
+        </span>
 
-    <div id="app-container" class="w-full h-full flex flex-col relative hidden">
-        
-        <header class="flex justify-between items-center p-5 glass-panel m-2 rounded-xl z-20 sticky top-0">
-            <div class="flex flex-col admin-trigger" id="admin-secret-btn">
-                <span class="font-brand text-xl font-bold text-gradient tracking-wider">RAJPUROHIT</span>
-                <span class="text-[0.6rem] text-gray-500">QUIZ APP</span>
-            </div>
-            
-            <div id="admin-badge" class="hidden bg-red-600 text-white text-xs px-2 py-1 rounded font-bold uppercase animate-pulse">
-                Admin Mode
-            </div>
-<button id="admin-toggle-btn"
-    class="hidden bg-red-700 text-white text-xs px-3 py-1 rounded font-bold rounded-lg">
-    Enable Admin
-</button>
-        
-            <div class="flex items-center gap-3">
-                <div class="text-right">
-                    <p id="header-points" class="text-raj-neon font-bold font-brand">0 XP</p>
-                </div>
-                <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-raj-pink shadow-neon">
-                    <img id="header-user-img" src="https://via.placeholder.com/150" alt="User" class="w-full h-full object-cover">
-                </div>
-            </div>
-        </header>
-
-        <main id="main-content" class="flex-1 overflow-y-auto pb-24 px-4 pt-2">
-            
-            <section id="view-home" class="space-y-6 animate-fade-in">
-                <div class="glass-panel p-6 relative overflow-hidden">
-                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-raj-pink rounded-full blur-3xl opacity-30"></div>
-                    <h2 class="text-2xl font-bold mb-1">Hello, <span id="user-name-display" class="text-raj-neon">User</span>!</h2>
-                    <p class="text-gray-400 text-sm">Ready to test your knowledge?</p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="glass-panel p-4 text-center">
-                        <i class="fas fa-trophy text-raj-gold text-2xl mb-2"></i>
-                        <p class="text-gray-400 text-xs uppercase">Global Rank</p>
-                        <h3 class="text-xl font-bold" id="stat-rank">#--</h3>
-                    </div>
-                    <div class="glass-panel p-4 text-center">
-                        <i class="fas fa-star text-raj-neon text-2xl mb-2"></i>
-                        <p class="text-gray-400 text-xs uppercase">Your Score</p>
-                        <h3 class="text-xl font-bold" id="stat-score">0</h3>
-                    </div>
-                    <div class="glass-panel p-4 text-center bg-green-500/10 border-green-500/30">
-                        <i class="fas fa-check-circle text-green-400 text-2xl mb-2"></i>
-                        <p class="text-gray-400 text-xs uppercase">Attended</p>
-                        <h3 class="text-xl font-bold" id="stat-attended">0</h3>
-                    </div>
-                    <div class="glass-panel p-4 text-center bg-red-500/10 border-red-500/30">
-                        <i class="fas fa-times-circle text-red-400 text-2xl mb-2"></i>
-                        <p class="text-gray-400 text-xs uppercase">Unattended</p>
-                        <h3 class="text-xl font-bold" id="stat-unattended">0</h3>
-                    </div>
-                </div>
-                
-                <div id="admin-panel-entry" class="hidden">
-                    <button class="w-full bg-gradient-to-r from-red-600 to-red-800 p-4 rounded-xl font-bold shadow-lg flex justify-between items-center">
-                        <span>ADMIN DASHBOARD</span>
-                        <i class="fas fa-lock-open"></i>
-                    </button>
-                </div>
-            </section>
-            <!-- ================= ADMIN DASHBOARD ================= -->
-<section id="admin-dashboard" class="hidden space-y-4">
-
-    <h2 class="font-brand text-xl text-red-500">Admin Dashboard</h2>
-
-    <div class="glass-panel p-4 space-y-2">
-        <h3 class="font-bold">Add Question</h3>
-
-        <select id="admin-class" class="w-full p-2 bg-black border rounded">
-            <option value="10">Class 10</option>
-            <option value="12">Class 12</option>
-        </select>
-
-        <input id="admin-question" class="w-full p-2 bg-black border rounded" placeholder="Question text">
-
-        <input id="opt1" class="w-full p-2 bg-black border rounded" placeholder="Option 1">
-        <input id="opt2" class="w-full p-2 bg-black border rounded" placeholder="Option 2">
-        <input id="opt3" class="w-full p-2 bg-black border rounded" placeholder="Option 3">
-        <input id="opt4" class="w-full p-2 bg-black border rounded" placeholder="Option 4">
-
-        <input id="correct-opt" type="number" class="w-full p-2 bg-black border rounded" placeholder="Correct option (0-3)">
-
-        <button onclick="addQuestionAdmin()" class="w-full bg-red-600 p-2 rounded">
-            Add Question
+        <button id="admin-toggle-btn"
+                class="hidden bg-red-700 text-white text-xs px-3 py-1 rounded font-bold">
+            Enable Admin
         </button>
     </div>
 
-    <button onclick="resetLeaderboardAdmin()" class="w-full bg-yellow-600 p-3 rounded font-bold">
-        Reset Leaderboard
-    </button>
-
-</section>
-<!-- ================= ADMIN DASHBOARD END ================= -->
-            
-
-            <section id="view-rank" class="hidden space-y-4">
-                <h2 class="font-brand text-2xl text-center mb-6 text-raj-gold">Global Leaderboard</h2>
-                <div id="leaderboard-list" class="space-y-3">
-                    <div class="glass-panel p-4 flex items-center gap-4 border-raj-gold border-opacity-50 bg-yellow-900/10">
-                        <div class="relative">
-                            <i class="fas fa-crown text-3xl text-raj-gold crown-glow absolute -top-6 -left-2 transform -rotate-12"></i>
-                            <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-raj-gold">
-                                <img src="https://via.placeholder.com/150" class="w-full h-full object-cover">
-                            </div>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-lg">Top User</h4>
-                            <p class="text-xs text-raj-gold">50000 XP</p>
-                        </div>
-                        <div class="text-2xl font-brand font-black text-raj-gold">#1</div>
-                    </div>
-                    </div>
-            </section>
-
-            <section id="view-quiz" class="hidden h-full flex flex-col">
-                <div id="quiz-class-select" class="space-y-4">
-                    <h2 class="font-brand text-2xl mb-4">Select Class</h2>
-                    <div class="grid grid-cols-1 gap-4" id="class-list-container">
-                        <button class="glass-panel p-6 text-left hover:bg-white/10 transition group">
-                            <h3 class="text-xl font-bold group-hover:text-raj-neon">Class 12</h3>
-                            <p class="text-xs text-gray-500">Tap to view subjects</p>
-                        </button>
-                        <button class="glass-panel p-6 text-left hover:bg-white/10 transition group">
-                            <h3 class="text-xl font-bold group-hover:text-raj-neon">Class 10</h3>
-                            <p class="text-xs text-gray-500">Tap to view subjects</p>
-                        </button>
-                    </div>
-                </div>
-
-                <div id="quiz-interface" class="hidden flex-col h-full">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-gray-400" id="quiz-timer">Time: 00:30</span>
-                        <span class="text-raj-neon font-bold" id="quiz-progress">1/10</span>
-                    </div>
-                    <div class="glass-panel p-6 mb-6 min-h-[150px] flex items-center justify-center">
-                        <h3 class="text-xl font-bold text-center leading-relaxed" id="question-text">
-                            Loading Question...
-                        </h3>
-                    </div>
-                    <div class="grid grid-cols-1 gap-3" id="options-container">
-                        </div>
-                </div>
-            </section>
-
-            <section id="view-profile" class="hidden flex flex-col items-center pt-10">
-                <div class="relative w-32 h-32 mb-6">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-raj-neon to-raj-pink rounded-full animate-spin-slow blur-sm"></div>
-                    <img id="profile-img-lg" src="https://via.placeholder.com/150" class="relative w-full h-full rounded-full object-cover border-4 border-black">
-                    <button class="absolute bottom-0 right-0 bg-white text-black p-2 rounded-full shadow-lg">
-                        <i class="fas fa-camera"></i>
-                    </button>
-                </div>
-                
-                <h2 class="text-2xl font-bold font-brand" id="profile-name">User Name</h2>
-                <p class="text-gray-400 mb-8" id="profile-email">user@example.com</p>
-
-                <div class="w-full glass-panel p-6 space-y-4">
-                    <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-                        <span>Total Score</span>
-                        <span class="text-raj-neon font-bold" id="profile-score">0 XP</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-                        <span>Accuracy</span>
-                        <span class="text-raj-pink font-bold">85%</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span>Status</span>
-                        <span class="text-green-400 font-bold">Active</span>
-                    </div>
-                </div>
-                
-                <button class="mt-8 text-red-500 font-bold tracking-widest text-sm uppercase" id="btn-logout">Logout</button>
-            </section>
-
-        </main>
-
-        <nav class="glass-panel fixed bottom-4 left-4 right-4 h-16 flex justify-around items-center z-50 shadow-neon">
-            <button class="nav-btn text-raj-neon flex flex-col items-center" data-target="view-home">
-                <i class="fas fa-home text-xl mb-1"></i>
-                <span class="text-[0.6rem] uppercase tracking-wider">Home</span>
-            </button>
-            <button class="nav-btn text-gray-500 hover:text-white flex flex-col items-center" data-target="view-rank">
-                <i class="fas fa-chart-bar text-xl mb-1"></i>
-                <span class="text-[0.6rem] uppercase tracking-wider">Rank</span>
-            </button>
-            <div class="relative -top-6">
-                <button class="nav-btn w-14 h-14 bg-gradient-to-r from-raj-neon to-raj-pink rounded-full flex items-center justify-center shadow-neon text-white transform hover:scale-110 transition" data-target="view-quiz">
-                    <i class="fas fa-gamepad text-2xl"></i>
-                </button>
-            </div>
-            <button class="nav-btn text-gray-500 hover:text-white flex flex-col items-center" data-target="view-quiz"> <i class="fas fa-layer-group text-xl mb-1"></i>
-                <span class="text-[0.6rem] uppercase tracking-wider">Quiz</span>
-            </button>
-            <button class="nav-btn text-gray-500 hover:text-white flex flex-col items-center" data-target="view-profile">
-                <i class="fas fa-user text-xl mb-1"></i>
-                <span class="text-[0.6rem] uppercase tracking-wider">Me</span>
-            </button>
-        </nav>
-
+    <!-- USER -->
+    <div class="flex items-center gap-2">
+        <img id="user-photo" class="w-8 h-8 rounded-full hidden">
+        <span id="user-name" class="text-sm"></span>
     </div>
+</header>
 
-    <script type="module">
-        // Import Firebase Functions
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<!-- ================= MAIN ================= -->
+<main id="main-content" class="flex-1 overflow-y-auto pb-24 px-4 pt-2">
 
-        // Firebase Config
-        const firebaseConfig = {
-          apiKey: "AIzaSyAOHPevaiVZWoDuxpp0L89a9kMAH6nV4IM",
-          authDomain: "rajpurohit-bf36c.firebaseapp.com",
-          projectId: "rajpurohit-bf36c",
-          storageBucket: "rajpurohit-bf36c.firebasestorage.app",
-          messagingSenderId: "765326201462",
-          appId: "1:765326201462:web:a06b47ff3ae131a87d4557",
-          measurementId: "G-H29TJ7PFC9"
-        };
+    <!-- ================= HOME ================= -->
+    <section id="view-home" class="space-y-6">
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        <div class="glass-panel p-4 text-center">
+            <h2 class="font-brand text-lg text-raj-neon">Welcome to Rajpurohit Quiz</h2>
+            <p class="text-sm opacity-80 mt-2">Test your knowledge & climb the leaderboard</p>
+        </div>
 
-        // --- TEMPORARY LOGIC FOR UI DEMO (User to Replace with Full Logic later) ---
-        
-        // 1. Splash Screen Timeout
-        setTimeout(() => {
-            document.getElementById('splash-screen').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('splash-screen').style.display = 'none';
-                document.getElementById('auth-screen').style.display = 'flex'; // Show Login First
-            }, 1000);
-        }, 3000); // 3 seconds splash
+        <!-- ADMIN DASHBOARD ENTRY -->
+        <button id="admin-panel-entry"
+                class="hidden w-full bg-red-600 p-3 rounded-xl font-bold">
+            ADMIN DASHBOARD
+        </button>
 
-        // 2. Simple Navigation Logic (Visual Only)
-        const navBtns = document.querySelectorAll('.nav-btn');
-        const views = ['view-home', 'view-rank', 'view-quiz', 'view-profile'];
+    </section>
 
-        navBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const target = btn.getAttribute('data-target');
-                if(!target) return;
+    <!-- ================= ADMIN DASHBOARD ================= -->
+    <section id="admin-dashboard" class="hidden space-y-4">
 
-                // Hide all views
-                views.forEach(v => document.getElementById(v).classList.add('hidden'));
-                // Show target
-                document.getElementById(target).classList.remove('hidden');
-                
-                // Update Icons colors (Simple toggle)
-                navBtns.forEach(b => b.classList.replace('text-raj-neon', 'text-gray-500'));
-                if(!btn.classList.contains('bg-gradient-to-r')) { // Don't dim the center button
-                    btn.classList.replace('text-gray-500', 'text-raj-neon');
-                }
-            });
-        });
+        <h2 class="font-brand text-xl text-red-500">Admin Dashboard</h2>
 
-        // 3. Fake Login Trigger (For viewing the UI immediately)
-        document.getElementById('google-login-btn').addEventListener('click', () => {
-             // In real app, this is where Google Sign In happens
-             document.getElementById('auth-screen').classList.add('hidden');
-             document.getElementById('app-container').classList.remove('hidden');
-             document.getElementById('app-container').classList.add('flex');
-        });
+        <!-- ADD QUESTION -->
+        <div class="glass-panel p-4 space-y-2">
+            <h3 class="font-bold">Add Question</h3>
 
-        // 4. Admin Secret Trigger (Click 5 times on logo)
-        let clickCount = 0;
-        document.getElementById('admin-secret-btn').addEventListener('click', () => {
-            clickCount++;
-            if(clickCount === 5) {
-                alert("Admin Mode Activated (UI Demo)");
-                document.getElementById('admin-badge').classList.remove('hidden');
-                document.getElementById('admin-panel-entry').classList.remove('hidden');
-            }
-        });
+            <select id="admin-class" class="w-full p-2 bg-black border rounded">
+                <option value="10">Class 10</option>
+                <option value="12">Class 12</option>
+            </select>
 
-    </script>
+            <input id="admin-question" class="w-full p-2 bg-black border rounded" placeholder="Question text">
+            <input id="opt1" class="w-full p-2 bg-black border rounded" placeholder="Option 1">
+            <input id="opt2" class="w-full p-2 bg-black border rounded" placeholder="Option 2">
+            <input id="opt3" class="w-full p-2 bg-black border rounded" placeholder="Option 3">
+            <input id="opt4" class="w-full p-2 bg-black border rounded" placeholder="Option 4">
+            <input id="correct-opt" type="number" class="w-full p-2 bg-black border rounded" placeholder="Correct option (0-3)">
+
+            <button onclick="addQuestionAdmin()" class="w-full bg-green-600 p-2 rounded">
+                Add Question
+            </button>
+        </div>
+
+        <!-- DELETE QUESTION -->
+        <div class="glass-panel p-4 space-y-2">
+            <h3 class="font-bold">Delete Question</h3>
+            <input id="delete-question-id" class="w-full p-2 bg-black border rounded" placeholder="Question Doc ID">
+            <button onclick="deleteQuestionAdmin()" class="w-full bg-red-700 p-2 rounded">
+                Delete Question
+            </button>
+        </div>
+
+        <!-- USER CONTROL -->
+        <div class="glass-panel p-4 space-y-2">
+            <h3 class="font-bold">User Control</h3>
+            <input id="user-uid" class="w-full p-2 bg-black border rounded" placeholder="User UID">
+            <input id="user-score" type="number" class="w-full p-2 bg-black border rounded" placeholder="New Score">
+            <button onclick="updateUserScoreAdmin()" class="w-full bg-blue-600 p-2 rounded">
+                Update Score
+            </button>
+        </div>
+
+        <!-- ADMIN CONTROL -->
+        <div class="glass-panel p-4 space-y-2">
+            <h3 class="font-bold">Temporary Admin Control</h3>
+            <input id="admin-email" class="w-full p-2 bg-black border rounded" placeholder="Gmail address">
+            <button onclick="addTempAdmin()" class="w-full bg-purple-600 p-2 rounded">
+                Make Admin
+            </button>
+            <button onclick="removeTempAdmin()" class="w-full bg-gray-600 p-2 rounded">
+                Remove Admin
+            </button>
+        </div>
+
+        <!-- RESET -->
+        <button onclick="resetLeaderboardAdmin()"
+                class="w-full bg-yellow-600 p-3 rounded-xl font-bold text-black">
+            Reset Leaderboard
+        </button>
+
+    </section>
+
+    <!-- ================= RANK ================= -->
+    <section id="view-rank" class="hidden space-y-4">
+        <!-- existing leaderboard -->
+    </section>
+
+</main>
+
+<script type="module" src="./app.js"></script>
 </body>
-                </html>
+</html>
