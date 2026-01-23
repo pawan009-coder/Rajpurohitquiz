@@ -1,159 +1,229 @@
-// Master JS for RAJPUROHIT - Full Control Version
-const ADMIN_EMAIL = "nagtakanwarpkd@gmail.com";
-let db, auth;
+// ================= FIREBASE IMPORTS =================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// 1. INITIALIZE FIREBASE
-function initApp() {
-    const firebaseConfig = {
-        apiKey: "AIzaSyAOHPevaiVZWoDuxpp0L89a9kMAH6nV4IM",
-        authDomain: "rajpurohit-bf36c.firebaseapp.com",
-        projectId: "rajpurohit-bf36c",
-        storageBucket: "rajpurohit-bf36c.firebasestorage.app",
-        messagingSenderId: "765326201462",
-        appId: "1:765326201462:web:a06b47ff3ae131a87d4557",
-        measurementId: "G-H29TJ7PFC9"
-    };
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  collection,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
-    auth = firebase.auth();
+// ================= FIREBASE CONFIG =================
+const firebaseConfig = {
+  apiKey: "AIzaSyAOHPevaiVZWoDuxpp0L89a9kMAH6nV4IM",
+  authDomain: "rajpurohit-bf36c.firebaseapp.com",
+  projectId: "rajpurohit-bf36c",
+  storageBucket: "rajpurohit-bf36c.firebasestorage.app",
+  messagingSenderId: "765326201462",
+  appId: "1:765326201462:web:a06b47ff3ae131a87d4557",
+  measurementId: "G-H29TJ7PFC9"
+};
 
-    setupAuth();
-}
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-// 2. AUTO LOGIN & SPLASH SYSTEM
-function setupAuth() {
-    auth.onAuthStateChanged(async (user) => {
-        const splash = document.getElementById('splash-screen');
-        const authScreen = document.getElementById('auth-screen');
-        const appContainer = document.getElementById('app-container');
+// ================= GLOBAL =================
+const MAIN_ADMIN = "nagtakanwarpkd@gmail.com";
+let currentUser = null;
+let isAdmin = false;
 
-        // Splash screen delay
-        setTimeout(() => {
-            splash.style.opacity = '0';
-            setTimeout(() => splash.classList.add('hidden'), 1000);
+// ================= AUTH =================
+window.googleLogin = async () => {
+  const provider = new GoogleAuthProvider();
+  await signInWithPopup(auth, provider);
+};
 
-            if (user) {
-                authScreen.classList.add('hidden');
-                appContainer.classList.remove('hidden');
-                loadUserData(user);
-            } else {
-                appContainer.classList.add('hidden');
-                authScreen.classList.remove('hidden');
-            }
-        }, 2500);
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return;
+
+  currentUser = user;
+
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  document.getElementById("userEmail").innerText = user.email;
+
+  // Create user if not exists
+  const userRef = doc(db, "users", user.uid);
+  const snap = await getDoc(userRef);
+
+  if (!snap.exists()) {
+    await setDoc(userRef, {
+      email: user.email,
+      score: 0,
+      attended: 0,
+      role: "user",
+      createdAt: Date.now()
     });
+  }
+
+  // Check admin
+  if (user.email === MAIN_ADMIN) {
+    document.getElementById("adminBtn").style.display = "block";
+  }
+
+  loadHome();
+  loadLeaderboard();
+});
+
+// ================= ADMIN MODE =================
+window.toggleAdmin = async () => {
+  const userRef = doc(db, "users", currentUser.uid);
+  const snap = await getDoc(userRef);
+
+  isAdmin = !isAdmin;
+
+  alert(isAdmin ? "ADMIN MODE ON" : "ADMIN MODE OFF");
+};
+
+// ================= HOME =================
+async function loadHome() {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, orderBy("score", "desc"));
+  const snap = await getDocs(q);
+
+  let rank = 1;
+  snap.forEach(d => {
+    if (d.id === currentUser.uid) {
+      document.querySelector("#home .card:nth-child(1) b").innerText = "#" + rank;
+      document.querySelector("#home .card:nth-child(2) b").innerText = d.data().score;
+      document.querySelector("#home .card:nth-child(3) b").innerText = d.data().attended || 0;
+    }
+    rank++;
+  });
 }
 
-// 3. LOGIN TRIGGER
-document.getElementById('google-login-btn').onclick = () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider);
-};
-
-document.getElementById('btn-logout').onclick = () => auth.signOut();
-
-// 4. LOAD USER & ADMIN CHECK
-async function loadUserData(user) {
-    const userRef = db.collection("users").doc(user.uid);
-    const doc = await userRef.get();
-
-    // Check if Admin (Email or Temp Admin status)
-    const isAdmin = (user.email === ADMIN_EMAIL || (doc.exists() && doc.data().tempAdmin === true));
-
-    if (!doc.exists()) {
-        await userRef.set({
-            name: user.displayName,
-            email: user.email,
-            photo: user.photoURL,
-            score: 0,
-            tempAdmin: false
-        });
-    }
-
-    // UI Updates
-    document.getElementById('user-name-display').innerText = user.displayName;
-    document.getElementById('profile-name').innerText = user.displayName;
-    document.getElementById('profile-email').innerText = user.email;
-    document.getElementById('header-user-img').src = user.photoURL;
-    document.getElementById('profile-img-lg').src = user.photoURL;
-
-    if (isAdmin) {
-        document.getElementById('admin-main-btn').classList.remove('hidden');
-        document.getElementById('admin-view').classList.remove('hidden');
-    }
-
-    // Real-time Score
-    userRef.onSnapshot(snap => {
-        const data = snap.data();
-        document.getElementById('header-points').innerText = `${data.score} XP`;
-        document.getElementById('stat-score').innerText = data.score;
-    });
-
-    loadLeaderboard();
-}
-
-// 5. NAVIGATION
-window.switchTab = (id) => {
-    const sections = ['view-home', 'view-rank', 'view-quiz', 'view-profile'];
-    sections.forEach(s => document.getElementById(s).classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-};
-
-// 6. ADMIN SUPREME POWERS
-window.adminResetLeaderboard = async () => {
-    if (!confirm("Kya aap sach mein Leaderboard reset karna chahte hain? Sabka score 0 ho jayega!")) return;
-    const users = await db.collection("users").get();
-    const batch = db.batch();
-    users.forEach(u => batch.update(u.ref, { score: 0 }));
-    await batch.commit();
-    alert("Leaderboard Cleared!");
-};
-
-window.adminAddTemporaryAdmin = async () => {
-    const email = prompt("Jis user ko Temp Admin banana hai uska Email likhein:");
-    if (!email) return;
-    const q = await db.collection("users").where("email", "==", email).get();
-    if (q.empty) return alert("User nahi mila!");
-    await q.docs[0].ref.update({ tempAdmin: true });
-    alert(email + " ab Admin hai!");
-};
-
-window.adminManageUsers = async () => {
-    const email = prompt("User ka email jiska data delete/edit karna hai:");
-    if (!email) return;
-    const q = await db.collection("users").where("email", "==", email).get();
-    if (q.empty) return alert("User nahi mila!");
-    
-    const action = prompt("Type 'DELETE' to remove user or 'SCORE' to edit score:");
-    if (action === "DELETE") {
-        await q.docs[0].ref.delete();
-        alert("User Deleted!");
-    } else if (action === "SCORE") {
-        const newScore = parseInt(prompt("Naya score likhein:"));
-        await q.docs[0].ref.update({ score: newScore });
-        alert("Score Updated!");
-    }
-};
-
-// 7. LEADERBOARD
+// ================= LEADERBOARD =================
 async function loadLeaderboard() {
-    const list = document.getElementById('leaderboard-list');
-    db.collection("users").orderBy("score", "desc").limit(20).onSnapshot(snap => {
-        list.innerHTML = "";
-        snap.forEach((doc, idx) => {
-            const d = doc.data();
-            list.innerHTML += `
-                <div class="glass-panel p-3 flex items-center justify-between border-l-4 ${idx === 0 ? 'border-raj-gold' : 'border-gray-700'}">
-                    <div class="flex items-center gap-3">
-                        <span class="font-brand text-lg w-6">${idx + 1}</span>
-                        <img src="${d.photo}" class="w-8 h-8 rounded-full border border-raj-neon">
-                        <p class="text-sm font-bold">${d.name}</p>
-                    </div>
-                    <p class="text-raj-neon font-brand text-xs">${d.score} XP</p>
-                </div>`;
-        });
-    });
+  const rankDiv = document.getElementById("rank");
+  rankDiv.innerHTML = "";
+
+  const q = query(collection(db, "users"), orderBy("score", "desc"));
+  const snap = await getDocs(q);
+
+  let i = 1;
+  snap.forEach(d => {
+    const crown = i === 1 ? " 👑" : "";
+    rankDiv.innerHTML += `
+      <div class="card">
+        #${i} ${d.data().email}${crown}
+      </div>`;
+    i++;
+  });
 }
 
-window.onload = initApp;
+// ================= QUIZ SYSTEM =================
+export async function submitQuiz(questions, answers) {
+  let correct = 0;
+  let score = 0;
+
+  questions.forEach((q, i) => {
+    if (answers[i] === q.correct) {
+      correct++;
+      score += 5;
+    } else {
+      score -= 1;
+    }
+  });
+
+  const percentBonus = Math.floor((correct / questions.length) * 500);
+  score += percentBonus;
+
+  const userRef = doc(db, "users", currentUser.uid);
+  await updateDoc(userRef, {
+    score: score,
+    attended: (currentUser.attended || 0) + 1
+  });
+
+  alert("Quiz Submitted");
+}
+
+// ================= ADMIN CONTROLS =================
+
+// Add Subject
+export async function addSubject(className, subject) {
+  if (!isAdmin) return;
+  await setDoc(doc(db, "classes", className, "subjects", subject), {
+    createdAt: Date.now()
+  });
+}
+
+// Add Quiz
+export async function addQuiz(className, subject, quizName) {
+  if (!isAdmin) return;
+  await setDoc(
+    doc(db, "classes", className, "subjects", subject, "quizzes", quizName),
+    { createdAt: Date.now() }
+  );
+}
+
+// Add Question
+export async function addQuestion(className, subject, quiz, questionData) {
+  if (!isAdmin) return;
+  await addDoc(
+    collection(db, "classes", className, "subjects", subject, "quizzes", quiz, "questions"),
+    questionData
+  );
+}
+
+// Delete Question
+export async function deleteQuestion(path, id) {
+  if (!isAdmin) return;
+  await deleteDoc(doc(db, path, id));
+}
+
+// Reset Leaderboard
+export async function resetLeaderboard() {
+  if (!isAdmin) return;
+
+  const snap = await getDocs(collection(db, "users"));
+  snap.forEach(async d => {
+    await updateDoc(doc(db, "users", d.id), {
+      score: 0,
+      attended: 0
+    });
+  });
+
+  alert("Leaderboard Reset");
+}
+
+// Give Extra Points
+export async function givePoints(uid, points) {
+  if (!isAdmin) return;
+  const ref = doc(db, "users", uid);
+  const snap = await getDoc(ref);
+  await updateDoc(ref, {
+    score: snap.data().score + points
+  });
+}
+
+// Temporary Admin
+export async function makeAdmin(uid) {
+  if (currentUser.email !== MAIN_ADMIN) return;
+  await updateDoc(doc(db, "users", uid), { role: "admin" });
+}
+
+export async function removeAdmin(uid) {
+  if (currentUser.email !== MAIN_ADMIN) return;
+  await updateDoc(doc(db, "users", uid), { role: "user" });
+}
+
+// ================= UI =================
+window.showSection = (id) => {
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+};
+    
