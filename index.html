@@ -33,37 +33,8 @@
             }
         }
     </script>
-
-    <style>
-        /* Essential Custom Styles for 3D effects */
-        body {
-            background-color: #000;
-            background-image: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000000 100%);
-            color: white;
-            overflow-x: hidden;
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-        }
-        .text-gradient {
-            background: linear-gradient(to right, #00f3ff, #bc13fe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .crown-glow {
-            filter: drop-shadow(0 0 10px #FFD700);
-        }
-        /* Hidden Admin Trigger Area */
-        .admin-trigger {
-            cursor: pointer;
-            user-select: none;
-        }
-        /* Hide scrollbar */
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
-    </style>
+<link rel="stylesheet" href="style.css">
+    
 </head>
 <body class="font-body h-screen w-screen relative overflow-hidden">
 
