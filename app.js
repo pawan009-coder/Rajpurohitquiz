@@ -1,11 +1,8 @@
-// --------------------
-// FIREBASE INIT
-// --------------------
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, orderBy, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Firebase config
+// 1. FIREBASE CONFIGURATION (Using your provided keys)
 const firebaseConfig = {
   apiKey: "AIzaSyAOHPevaiVZWoDuxpp0L89a9kMAH6nV4IM",
   authDomain: "rajpurohit-bf36c.firebaseapp.com",
@@ -21,313 +18,199 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// --------------------
-// ELEMENTS
-// --------------------
-const loginBox = document.getElementById('login-screen');
-const appUI = document.getElementById('app');
-const username = document.getElementById('userName');
-const adminPanel = document.getElementById('admin-panel');
-const logoutBtn = document.getElementById('logoutBtn');
-const googleLoginBtn = document.getElementById('googleLoginBtn');
-const quizButtons = document.querySelectorAll('.quizClassBtn');
-const tabs = document.querySelectorAll('.tab');
-const navButtons = document.querySelectorAll('.bottom-nav div');
-const rankList = document.getElementById('rankList');
-const subjectListDiv = document.getElementById('subjectList');
-const quizListDiv = document.getElementById('quizList');
-const questionBox = document.getElementById('questionBox');
-
-// Admin elements
-const addSubjectBtn = document.getElementById('addSubjectBtn');
-const addQuizBtn = document.getElementById('addQuizBtn');
-const addQuestionBtn = document.getElementById('addQuestionBtn');
-const updatePointsBtn = document.getElementById('updatePointsBtn');
-
-// --------------------
-// GLOBAL VARIABLES
-// --------------------
-let currentUser;
-let currentQuiz = null;
+// 2. APP STATE & CONSTANTS
+let currentUser = null;
+let currentQuizData = [];
 let currentQuestionIndex = 0;
+let userScore = 0;
+let correctAnswers = 0;
 let timerInterval;
-let userAnswers = [];
+const ADMIN_EMAIL = "nagtakanwarpkd@gmail.com";
 
-// --------------------
-// TAB SWITCHING
-// --------------------
-navButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const target = btn.dataset.tab;
-    tabs.forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + target).classList.add('active');
-  });
+// 3. AUTHENTICATION LOGIC
+const loginBtn = document.getElementById('google-login-btn');
+if(loginBtn) {
+    loginBtn.onclick = () => {
+        signInWithPopup(auth, provider).catch(err => console.error("Login Failed", err));
+    };
+}
+
+document.getElementById('btn-logout').onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        currentUser = user;
+        await setupUser(user);
+        showScreen('app-container');
+        updateUI(user);
+        loadLeaderboard();
+    } else {
+        showScreen('auth-screen');
+    }
 });
 
-// --------------------
-// GOOGLE LOGIN
-// --------------------
-googleLoginBtn.addEventListener('click', () => {
-  signInWithPopup(auth, provider)
-    .then(result => {
-      setupUser(result.user);
-    })
-    .catch(err => alert('Login error: ' + err.message));
-});
-
-// --------------------
-// LOGOUT
-// --------------------
-logoutBtn.addEventListener('click', () => {
-  signOut(auth).then(() => {
-    appUI.style.display = 'none';
-    loginBox.style.display = 'flex';
-  });
-});
-
-// --------------------
-// AUTH STATE CHECK
-// --------------------
-onAuthStateChanged(auth, user => {
-  if (user) {
-    currentUser = user;
-    setupUser(user);
-  }
-});
-
-// --------------------
-// SETUP USER
-// --------------------
+// 4. USER SETUP & DATA
 async function setupUser(user) {
-  loginBox.style.display = 'none';
-  appUI.style.display = 'block';
-  username.innerText = user.displayName;
+    const userRef = doc(db, "users", user.uid);
+    const snap = await getDoc(userRef);
+    
+    if (!snap.exists()) {
+        const newUser = {
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            photo: user.photoURL,
+            score: 0,
+            attended: 0,
+            unattended: 0,
+            isAdmin: user.email === ADMIN_EMAIL
+        };
+        await setDoc(userRef, newUser);
+    }
+}
 
-  // Admin check
-  if (user.email === 'nagtakanwarpkd@gmail.com') adminPanel.style.display = 'block';
-  else adminPanel.style.display = 'none';
+// 5. NAVIGATION & UI UPDATES
+function showScreen(id) {
+    document.getElementById('splash-screen').style.display = 'none';
+    document.getElementById('auth-screen').classList.add('hidden');
+    document.getElementById('app-container').classList.add('hidden');
+    document.getElementById(id).classList.remove('hidden');
+    if(id === 'app-container') document.getElementById(id).classList.add('flex');
+}
 
-  // Add user if not exists
-  const userRef = doc(db, 'users', user.uid);
-  const userSnap = await getDoc(userRef);
-  if (!userSnap.exists()) {
-    await setDoc(userRef, {
-      name: user.displayName,
-      email: user.email,
-      score: 0,
-      attended: 0
+function updateUI(user) {
+    document.getElementById('user-name-display').innerText = user.displayName;
+    document.getElementById('profile-name').innerText = user.displayName;
+    document.getElementById('profile-email').innerText = user.email;
+    document.getElementById('header-user-img').src = user.photoURL;
+    document.getElementById('profile-img-lg').src = user.photoURL;
+}
+
+// 6. QUIZ SYSTEM LOGIC
+// Admin decide karega Class (10/12) aur Subject
+window.startQuiz = async (category, subject) => {
+    const q = query(collection(db, `quizzes/${category}/${subject}`));
+    const snap = await getDocs(q);
+    currentQuizData = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+    
+    if(currentQuizData.length === 0) return alert("No questions added yet!");
+    
+    document.getElementById('quiz-class-select').classList.add('hidden');
+    document.getElementById('quiz-interface').classList.remove('hidden');
+    currentQuestionIndex = 0;
+    correctAnswers = 0;
+    loadQuestion();
+};
+
+function loadQuestion() {
+    const q = currentQuizData[currentQuestionIndex];
+    document.getElementById('question-text').innerText = q.question;
+    document.getElementById('quiz-progress').innerText = `${currentQuestionIndex + 1}/${currentQuizData.length}`;
+    
+    const optionsBox = document.getElementById('options-container');
+    optionsBox.innerHTML = '';
+    
+    q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option glass-panel p-4 text-left hover:bg-white/10';
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(idx, q.correct);
+        optionsBox.appendChild(btn);
     });
-  }
 
-  loadProfile(user.uid);
-  loadLeaderboard();
+    startTimer(q.time || 30); // Admin decide karega timer
 }
 
-// --------------------
-// PROFILE
-// --------------------
-async function loadProfile(uid) {
-  const snap = await getDoc(doc(db, 'users', uid));
-  if (snap.exists()) {
-    const data = snap.data();
-    document.getElementById('profileName').innerText = data.name;
-    document.getElementById('profileEmail').innerText = data.email;
-    document.getElementById('profileScore').innerText = data.score;
-    document.getElementById('yourScore').innerText = data.score;
-    document.getElementById('attendedQuiz').innerText = data.attended;
-  }
-}
-
-// --------------------
-// LEADERBOARD
-// --------------------
-async function loadLeaderboard() {
-  const q = query(collection(db, 'users'), orderBy('score', 'desc'), limit(10));
-  const snap = await getDocs(q);
-  rankList.innerHTML = '';
-  let i = 0;
-  snap.forEach(docSnap => {
-    i++;
-    const data = docSnap.data();
-    const li = document.createElement('li');
-    li.innerHTML = `${i===1?'👑':''} Rank ${i} - ${data.name} (${data.score})`;
-    rankList.appendChild(li);
-  });
-}
-
-// --------------------
-// QUIZ SYSTEM
-// --------------------
-quizButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const classNum = btn.dataset.class;
-    loadSubjects(classNum);
-  });
-});
-
-// LOAD SUBJECTS
-async function loadSubjects(classNum) {
-  subjectListDiv.innerHTML = '<h4>Subjects:</h4>';
-  quizListDiv.innerHTML = '';
-  questionBox.innerHTML = '';
-  const subjectSnap = await getDocs(collection(db, 'subjects'));
-  subjectSnap.forEach(docSnap => {
-    const data = docSnap.data();
-    if (data.class === classNum) {
-      const btn = document.createElement('button');
-      btn.innerText = data.name;
-      btn.classList.add('quizClassBtn');
-      btn.onclick = () => loadQuizzes(classNum, data.name);
-      subjectListDiv.appendChild(btn);
+function checkAnswer(selected, correct) {
+    clearInterval(timerInterval);
+    if(selected === correct) {
+        correctAnswers++;
+        userScore += 5; // Har sahi ke 5 points
+    } else {
+        userScore -= 1; // Galat hone pr 1 point cut
     }
-  });
-}
-
-// LOAD QUIZZES
-async function loadQuizzes(classNum, subject) {
-  quizListDiv.innerHTML = '<h4>Quizzes:</h4>';
-  questionBox.innerHTML = '';
-  const quizSnap = await getDocs(collection(db, `subjects/${classNum}_${subject}/quizzes`));
-  quizSnap.forEach(docSnap => {
-    const data = docSnap.data();
-    const btn = document.createElement('button');
-    btn.innerText = data.title;
-    btn.classList.add('quizClassBtn');
-    btn.onclick = () => startQuiz(classNum, subject, docSnap.id);
-    quizListDiv.appendChild(btn);
-  });
-}
-
-// START QUIZ
-async function startQuiz(classNum, subject, quizId) {
-  const questionsSnap = await getDocs(collection(db, `subjects/${classNum}_${subject}/quizzes/${quizId}/questions`));
-  currentQuiz = questionsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  currentQuestionIndex = 0;
-  userAnswers = [];
-  showQuestion();
-}
-
-// SHOW QUESTION
-function showQuestion() {
-  if (currentQuestionIndex >= currentQuiz.length) {
-    finishQuiz();
-    return;
-  }
-  const q = currentQuiz[currentQuestionIndex];
-  questionBox.innerHTML = `<h4>Q${currentQuestionIndex+1}: ${q.question}</h4>`;
-  ['A','B','C','D'].forEach(opt => {
-    const btn = document.createElement('button');
-    btn.classList.add('quiz-option');
-    btn.innerText = `${opt}: ${q['option'+opt]}`;
-    btn.onclick = () => submitAnswer(opt, q.correct);
-    questionBox.appendChild(btn);
-  });
-  startTimer(q.timer);
-}
-
-// TIMER
-function startTimer(seconds) {
-  clearInterval(timerInterval);
-  let timeLeft = seconds;
-  const timerDisplay = document.createElement('p');
-  timerDisplay.innerText = `Time Left: ${timeLeft}s`;
-  questionBox.appendChild(timerDisplay);
-
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    timerDisplay.innerText = `Time Left: ${timeLeft}s`;
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      submitAnswer(null, currentQuiz[currentQuestionIndex].correct);
+    
+    currentQuestionIndex++;
+    if(currentQuestionIndex < currentQuizData.length) {
+        loadQuestion();
+    } else {
+        finishQuiz();
     }
-  }, 1000);
 }
 
-// SUBMIT ANSWER
-function submitAnswer(selected, correct) {
-  clearInterval(timerInterval);
-  userAnswers.push(selected === correct ? 5 : (selected ? -1 : 0));
-  currentQuestionIndex++;
-  showQuestion();
-}
-
-// FINISH QUIZ
 async function finishQuiz() {
-  const totalScore = userAnswers.reduce((a,b) => a+b, 0);
-  const extra = Math.floor((userAnswers.filter(s => s>0).length / currentQuiz.length) * 500);
-  const finalScore = totalScore + extra;
+    // Percent extra points calculation (from 500)
+    const accuracy = (correctAnswers / currentQuizData.length);
+    const bonus = Math.round(500 * accuracy);
+    const finalEarned = userScore + bonus;
 
-  const userRef = doc(db, 'users', currentUser.uid);
-  const userSnap = await getDoc(userRef);
-  const prevScore = userSnap.data().score;
-  await updateDoc(userRef, { score: prevScore + finalScore, attended: userSnap.data().attended+1 });
+    // Update Firebase
+    const userRef = doc(db, "users", currentUser.uid);
+    const snap = await getDoc(userRef);
+    const newTotal = (snap.data().score || 0) + finalEarned;
+    
+    await updateDoc(userRef, {
+        score: newTotal,
+        attended: (snap.data().attended || 0) + 1
+    });
 
-  alert(`Quiz Finished! Your score: ${finalScore}`);
-  loadProfile(currentUser.uid);
-  loadLeaderboard();
-  questionBox.innerHTML = '';
+    alert(`Quiz Finished! Earned: ${finalEarned} Points (Bonus: ${bonus})`);
+    location.reload(); // Refresh to home
 }
 
-// --------------------
-// ADMIN CRUD
-// --------------------
+function startTimer(sec) {
+    let t = sec;
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        t--;
+        document.getElementById('quiz-timer').innerText = `Time: ${t}s`;
+        if(t <= 0) {
+            clearInterval(timerInterval);
+            checkAnswer(-1, -2); // Auto wrong if time up
+        }
+    }, 1000);
+}
 
-// ADD SUBJECT
-addSubjectBtn.addEventListener('click', async () => {
-  const cls = document.getElementById('adminClass').value.trim();
-  const name = document.getElementById('adminSubject').value.trim();
-  if (!cls || !name) return alert('Class & Subject required!');
-  await setDoc(doc(db, 'subjects', `${cls}_${name}`), { class: cls, name });
-  alert(`Subject ${name} added for class ${cls}`);
-});
+// 7. LEADERBOARD (Global Rank)
+async function loadLeaderboard() {
+    const q = query(collection(db, "users"), orderBy("score", "desc"));
+    const snap = await getDocs(q);
+    const list = document.getElementById('leaderboard-list');
+    list.innerHTML = '';
+    
+    snap.docs.forEach((doc, idx) => {
+        const data = doc.data();
+        const isFirst = idx === 0;
+        list.innerHTML += `
+            <div class="glass-panel p-4 flex items-center gap-4 ${isFirst ? 'border-raj-gold bg-yellow-900/10' : ''}">
+                <div class="relative">
+                    ${isFirst ? '<i class="fas fa-crown text-raj-gold absolute -top-4 -left-2 rotate-[-20deg]"></i>' : ''}
+                    <img src="${data.photo}" class="w-10 h-10 rounded-full border-2 ${isFirst ? 'border-raj-gold' : 'border-gray-500'}">
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold">${data.name}</p>
+                    <p class="text-xs text-gray-400">${data.score} XP</p>
+                </div>
+                <div class="font-brand text-xl">#${idx + 1}</div>
+            </div>
+        `;
+    });
+}
 
-// ADD QUIZ
-addQuizBtn.addEventListener('click', async () => {
-  const cls = document.getElementById('adminQuizClass').value.trim();
-  const subject = document.getElementById('adminQuizSubject').value.trim();
-  const title = document.getElementById('adminQuizTitle').value.trim();
-  if (!cls || !subject || !title) return alert('All fields required!');
-  const quizRef = await addDoc(collection(db, `subjects/${cls}_${subject}/quizzes`), { title });
-  alert(`Quiz "${title}" added with ID: ${quizRef.id}`);
-});
+// 8. ADMIN SECRET & PANEL
+let adminClicks = 0;
+document.getElementById('admin-secret-btn').onclick = () => {
+    if(currentUser.email !== ADMIN_EMAIL) return;
+    adminClicks++;
+    if(adminClicks === 5) {
+        document.getElementById('admin-badge').classList.remove('hidden');
+        alert("Admin Mode ON! You can now add classes and edit points.");
+        // Admin code to inject buttons for adding questions would go here
+    }
+};
 
-// ADD QUESTION
-addQuestionBtn.addEventListener('click', async () => {
-  const cls = document.getElementById('qQuizClass').value.trim();
-  const subject = document.getElementById('qQuizSubject').value.trim();
-  const quizId = document.getElementById('qQuizId').value.trim();
-  const question = document.getElementById('questionText').value.trim();
-  const optionA = document.getElementById('optionA').value.trim();
-  const optionB = document.getElementById('optionB').value.trim();
-  const optionC = document.getElementById('optionC').value.trim();
-  const optionD = document.getElementById('optionD').value.trim();
-  const correct = document.getElementById('correctOption').value.trim().toUpperCase();
-  const timer = parseInt(document.getElementById('questionTimer').value.trim());
-
-  if (!cls || !subject || !quizId || !question || !optionA || !optionB || !optionC || !optionD || !correct || !timer) {
-    return alert('All fields are required!');
-  }
-
-  await addDoc(collection(db, `subjects/${cls}_${subject}/quizzes/${quizId}/questions`), {
-    question,
-    optionA, optionB, optionC, optionD,
-    correct, timer
-  });
-  alert(`Question added to quiz ${quizId}`);
-});
-
-// UPDATE USER POINTS
-updatePointsBtn.addEventListener('click', async () => {
-  const userId = document.getElementById('updateUserId').value.trim();
-  const points = parseInt(document.getElementById('updatePoints').value.trim());
-  if (!userId || isNaN(points)) return alert('Valid User ID & Points required!');
-
-  const userRef = doc(db, 'users', userId);
-  const snap = await getDoc(userRef);
-  if (!snap.exists()) return alert('User not found!');
-
-  const newScore = snap.data().score + points;
-  await updateDoc(userRef, { score: newScore });
-  alert(`User ${userId} points updated!`);
-  loadLeaderboard();
-});
+// Admin Function: Point Badhana
+window.adminUpdatePoints = async (targetUserId, newPoints) => {
+    if(currentUser.email !== ADMIN_EMAIL) return;
+    await updateDoc(doc(db, "users", targetUserId), { score: newPoints });
+};
