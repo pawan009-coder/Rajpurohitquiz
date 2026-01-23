@@ -178,16 +178,21 @@ const startTimer = (sec) => {
 // 5. ADMIN & DATA MANAGEMENT
 // ==========================================
 // Secret Admin Button (Top Logo click logic)
-let adminClicks = 0;
-document.getElementById('admin-trigger').onclick = () => {
-    if(!isAdmin) return;
-    adminClicks++;
-    if(adminClicks === 5) {
-        document.getElementById('admin-tag').classList.remove('hidden');
-        alert("Master Admin Mode Activated!");
-        // Enable Admin-only UI elements here
+const adminBtn = document.getElementById("admin-toggle-btn");
+
+onAuthStateChanged(auth, (user) => {
+    if (user && user.email === ADMIN_EMAIL) {
+        adminBtn.classList.remove("hidden");
     }
+});
+
+adminBtn.onclick = () => {
+    isAdmin = true;
+    document.getElementById("admin-badge").classList.remove("hidden");
+    document.getElementById("admin-panel-entry").classList.remove("hidden");
+    alert("Admin Mode ON");
 };
+
 
 // Admin can manually update points
 window.updatePointsAdmin = async (uid, newScore) => {
