@@ -82,11 +82,6 @@ window.switchTab = (viewId) => {
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.add('text-gray-500'));
     if(viewId === 'home-view') loadLeaderboard();
 };
-// Open Admin Dashboard
-document.getElementById("admin-panel-entry").onclick = () => {
-    switchTab("admin-dashboard");
-};
-
 
 // ==========================================
 // 4. QUIZ ENGINE (POINTS & LOGIC)
@@ -183,21 +178,16 @@ const startTimer = (sec) => {
 // 5. ADMIN & DATA MANAGEMENT
 // ==========================================
 // Secret Admin Button (Top Logo click logic)
-const adminBtn = document.getElementById("admin-toggle-btn");
-
-onAuthStateChanged(auth, (user) => {
-    if (user && user.email === ADMIN_EMAIL) {
-        adminBtn.classList.remove("hidden");
+let adminClicks = 0;
+document.getElementById('admin-trigger').onclick = () => {
+    if(!isAdmin) return;
+    adminClicks++;
+    if(adminClicks === 5) {
+        document.getElementById('admin-tag').classList.remove('hidden');
+        alert("Master Admin Mode Activated!");
+        // Enable Admin-only UI elements here
     }
-});
-
-adminBtn.onclick = () => {
-    isAdmin = true;
-    document.getElementById("admin-badge").classList.remove("hidden");
-    document.getElementById("admin-panel-entry").classList.remove("hidden");
-    alert("Admin Mode ON");
 };
-
 
 // Admin can manually update points
 window.updatePointsAdmin = async (uid, newScore) => {
@@ -245,47 +235,3 @@ const loadAppData = async (uid) => {
         }
     });
 };
-// ================================
-// ADMIN FULL CONTROLS
-// ================================
-
-window.addQuestionAdmin = async () => {
-    if (!isAdmin) return alert("Not admin");
-
-    const cls = document.getElementById("admin-class").value;
-    const question = document.getElementById("admin-question").value;
-
-    const options = [
-        opt1.value,
-        opt2.value,
-        opt3.value,
-        opt4.value
-    ];
-
-    const correct = Number(document.getElementById("correct-opt").value);
-
-    await addDoc(collection(db, `quizzes/class${cls}/questions`), {
-        text: question,
-        options,
-        correct,
-        time: 30
-    });
-
-    alert("Question Added Successfully");
-};
-
-window.resetLeaderboardAdmin = async () => {
-    if (!isAdmin) return;
-
-    const snap = await getDocs(collection(db, "users"));
-    snap.forEach(async (docu) => {
-        await updateDoc(doc(db, "users", docu.id), {
-            score: 0,
-            attended: 0,
-            unattended: 0
-        });
-    });
-
-    alert("Leaderboard Reset Done");
-};
-        
