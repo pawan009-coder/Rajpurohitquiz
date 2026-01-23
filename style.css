@@ -1,55 +1,216 @@
-/* RAJPUROHIT SUPREME STYLE */
+/* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* ================= BACKGROUND ================= */
 body {
-    background: #000;
-    -webkit-tap-highlight-color: transparent;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: #ffffff;
+  overflow-x: hidden;
 }
 
-.glass-panel {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
+/* ================= LOGIN SCREEN ================= */
+#loginScreen {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top, #1e3c72, #2a5298);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-.text-gradient {
-    background: linear-gradient(90deg, #00f3ff, #bc13fe);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+.app-title {
+  font-size: 3rem;                 /* FIX: R & T cut nahi honge */
+  font-weight: 800;
+  letter-spacing: 4px;
+  text-shadow: 0 15px 40px rgba(0,0,0,.6);
+  transform: perspective(800px) rotateX(10deg);
 }
 
-/* Splash Screen fix */
-#splash-screen h1 {
-    text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+.app-sub {
+  margin-top: 10px;
+  opacity: 0.85;
+  letter-spacing: 2px;
+  font-size: 0.9rem;
 }
 
-/* Animations */
-@keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.login-btn {
+  margin-top: 40px;
+  padding: 14px 32px;
+  border: none;
+  border-radius: 30px;
+  background: #ffffff;
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 20px 45px rgba(0,0,0,.5);
+  transition: transform .2s ease, box-shadow .2s ease;
 }
 
-.animate-fade-in {
-    animation: fade-in 0.5s ease forwards;
+.login-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 25px 55px rgba(0,0,0,.6);
 }
 
-/* Quiz Option Styles */
-.quiz-option {
-    width: 100%;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    text-align: left;
-    transition: 0.3s;
+/* ================= MAIN APP ================= */
+#app {
+  padding-bottom: 90px;
 }
 
-.quiz-option:active {
-    background: var(--raj-neon);
-    color: #000;
+/* ================= HEADER ================= */
+header {
+  text-align: center;
+  padding: 20px 10px;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #bc13fe; border-radius: 10px; }
+header h1 {
+  font-size: 2.2rem;
+  letter-spacing: 3px;
+}
+
+header small {
+  opacity: 0.8;
+  font-size: 0.85rem;
+}
+
+/* ================= ADMIN BUTTON ================= */
+#adminBtn {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.3);
+  background: rgba(255,255,255,.15);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.4);
+  transition: all .2s ease;
+  display: none;
+}
+
+#adminBtn:hover {
+  transform: scale(1.05);
+}
+
+/* ================= SECTIONS ================= */
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+/* ================= GLASS CARDS ================= */
+.card {
+  margin: 16px;
+  padding: 20px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.15),
+    0 25px 60px rgba(0,0,0,.45);
+  transform: perspective(900px) rotateX(3deg);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.card:hover {
+  transform: perspective(900px) rotateX(0deg) translateY(-4px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.2),
+    0 35px 80px rgba(0,0,0,.6);
+}
+
+/* ================= BUTTONS ================= */
+.card button {
+  margin-top: 12px;
+  margin-right: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg,#00c6ff,#0072ff);
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0,0,0,.4);
+  transition: all .2s ease;
+}
+
+.card button:hover {
+  transform: translateY(-2px);
+}
+
+/* ================= LEADERBOARD ================= */
+.crown {
+  color: gold;
+  margin-left: 6px;
+  text-shadow: 0 0 10px rgba(255,215,0,.8);
+}
+
+/* ================= PROFILE ================= */
+#me p {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* ================= BOTTOM NAV ================= */
+nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 75px;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(14px);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -10px 30px rgba(0,0,0,.5);
+}
+
+nav button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+nav button i {
+  font-size: 22px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+nav button:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 380px) {
+  .app-title {
+    font-size: 2.5rem;
+  }
+  header h1 {
+    font-size: 1.9rem;
+  }
+    }
+      
